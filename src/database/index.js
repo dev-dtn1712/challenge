@@ -23,12 +23,49 @@ const getUsers = () => {
 
 const getListOfAgesOfUsersWith = (item) => {
     const dataAccessMethod = () => {
-        // fill me in :)
+        const users = _.map(db.usersById, (userInfo) => userInfo);
+
+        const userAgeMap = _.reduce(
+            users,
+            (res, user) => {
+                res[user.username] = user.age;
+                return res;
+            },
+            {}
+        );
+        
+        const filteredUsers = item ? _.reduce(
+            db.itemsOfUserByUsername,
+            (result, items, username) => 
+                items.includes(item) ? [...result, username] : result,
+            []
+        ): users.map(user => user.username);
+
+        const data = _.reduce(
+            filteredUsers,
+            (result, username) => ({
+                ...result,
+                [userAgeMap[username]]: (result[userAgeMap[username]] || 0) + 1,
+            }),
+            {}
+        );
+
+        return Object.keys(data).map(age => ({ age, count: data[age] }));
+    };
+    return mockDBCall(dataAccessMethod);
+};
+
+// Get Item List
+const getItems = () => {
+    const dataAccessMethod = () => {
+        const itemList = _.map(db.itemsOfUserByUsername, (user) => user);
+        return [... new Set(itemList.flat())];
     }
     return mockDBCall(dataAccessMethod);
 }
 
 module.exports = {
     getUsers,
-    getListOfAgesOfUsersWith
+    getListOfAgesOfUsersWith,
+    getItems
 };
